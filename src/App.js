@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Home from './Home';
+import Profile from './components/Profile';
+import Navbar from './components/Navbar';
+const App = () => {
+  const navigate = useNavigate();
 
-function App() {
+  const userInfo = localStorage.getItem('userInfo');
+  const handleLogout = () => {
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('isLoggedIn');
+    navigate('/login');
+  };
+
+  let userDetails = JSON.parse(localStorage.getItem('userInfo'));
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App '>
+      {userDetails && <Navbar onLogout={handleLogout} />}
+      <Routes>
+        <Route
+          exact
+          path='/'
+          element={
+            userInfo ? (
+              <Home onLogout={handleLogout} />
+            ) : (
+              <Navigate to='/login' />
+            )
+          }
+        />
+        <Route exact path='/login' element={<Login />} />
+        <Route exact path='/sign-up' element={<Signup />} />
+        <Route path='/profile' element={<Profile />} />
+      </Routes>
     </div>
   );
-}
+};
 
 export default App;
