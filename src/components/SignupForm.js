@@ -1,53 +1,44 @@
-import React, { useState } from 'react';
-import { p1, p2, p3, p4, p5, p6 } from '../static/constant';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import FormBottom from '../components/Forms/FormBottom';
+
+import FormFields from '../components/Forms/FormFields';
+import { Context } from '../context/Context';
+import ImageCard from './ImageCard';
 
 const SignupForm = () => {
+  const {
+    uploadedImages,
+    getUserImages,
+    staticImages,
+    email,
+    setEmail,
+    handleImageUpload,
+    validate,
+    selectedPattern,
+    handleImageClick,
+  } = useContext(Context);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedPattern, setSelectedPattern] = useState([]);
   const [responseMessage, setResponseMessage] = useState('');
-  const [errors, setErrors] = useState({});
+  const [imagesUploaded, setImagesUploaded] = useState(false);
+  const [p1, p2, p3, p4, p5, p6] = staticImages;
 
-  const uploadedImages = [p1, p2, p3, p4, p5, p6];
-
-  const handleImageClick = (imageId) => {
-    const newPattern = [...selectedPattern, imageId];
-    setSelectedPattern(newPattern);
-  };
-
-  const validateForm = () => {
-    const errors = {};
-
-    if (!name.trim()) {
-      errors.name = 'Name is required';
-    }
-
-    if (!email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.email = 'Email is invalid';
-    }
-
-    if (!password.trim()) {
-      errors.password = 'Password is required';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-    if (selectedPattern.length === 0) {
-      errors.pattern = 'Please select at least one image';
-    } else if (selectedPattern.length > 3) {
-      errors.pattern = 'Please select no more than 3 images';
-    }
-    setErrors(errors);
-
-    return Object.keys(errors).length === 0;
-  };
+  useEffect(() => {
+    getUserImages();
+  }, [email, imagesUploaded]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (validateForm()) {
+    console.log(email, password, selectedPattern, 'selectedPattern');
+    if (
+      validate({
+        email,
+        password,
+        selectedPattern,
+      })
+    ) {
       try {
         const response = await fetch('http://localhost:4000/sign-up', {
           method: 'POST',
@@ -57,8 +48,8 @@ const SignupForm = () => {
           body: JSON.stringify({
             name,
             email,
-            password,
-            pattern: selectedPattern,
+            password: password.replace('a', '*'),
+            pattern: JSON.stringify(selectedPattern),
           }),
         });
 
@@ -81,7 +72,7 @@ const SignupForm = () => {
   };
 
   return (
-    <div className='max-w-md mx-auto mt-8 p-6 rounded-md shadow-md'>
+    <div className='max-w-md mx-auto mt-8 p-6 border border-gray-800 rounded-md shadow-md'>
       <h2 className='text-2xl font-semibold mb-4'>Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <div className='mb-4'>
@@ -90,49 +81,46 @@ const SignupForm = () => {
             placeholder='Name'
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className='w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500'
+            className='w-full px-3 py-2 border bg-slate-900 border-gray-600 rounded-md focus:outline-none focus:border-blue-500'
             required
           />
-          {errors.name && <div className='text-red-500'>{errors.name}</div>}
         </div>
         <div className='mb-4'>
-          <input
-            type='email'
-            placeholder='Email'
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className='w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500'
-            required
+          <FormFields
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
           />
-          {errors.email && <div className='text-red-500'>{errors.email}</div>}
         </div>
         <div className='mb-4'>
-          <input
-            type='password'
-            placeholder='Password'
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className='w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500'
-            required
-          />
-          {errors.password && (
-            <div className='text-red-500'>{errors.password}</div>
-          )}
           <div className='pattern mt-4'>
             <p className='mb-4'>
               Please select a pattern by clicking on the images.
             </p>
-
             <div className='grid grid-cols-3 gap-4'>
-              {uploadedImages.map((item, index) => (
-                <img
-                  key={index}
-                  src={item}
-                  alt={`item ${index + 1}`}
-                  onClick={() => handleImageClick(index + 1)}
-                  className='w-24 cursor-pointer rounded-md hover:shadow-md transition duration-300'
-                />
+              {(uploadedImages?.length > 0
+                ? uploadedImages
+                : [p1, p2, p3, p4, p5, p6]
+              ).map((item, index) => (
+                <div key={index}>
+                  <ImageCard
+                    index={index}
+                    image={item}
+                    handleImageClick={handleImageClick}
+                  />
+                </div>
               ))}
+            </div>
+            <div className='upload-img'>
+              <input
+                type='file'
+                onChange={handleImageUpload}
+                accept='image/*'
+                disabled={!/\S+@\S+\.\S+/.test(email)}
+                multiple
+                className='w-full px-3 py-2 border bg-slate-900 border-gray-600 rounded-md focus:outline-none focus:border-blue-500'
+              />
             </div>
           </div>
         </div>
@@ -147,15 +135,7 @@ const SignupForm = () => {
         </div>
       </form>
 
-      <div className='text-sm flex items-center justify-center'>
-        <div className='m-2'>Already have an account?</div>
-        <a className='text-blue-900' href='/login'>
-          Login
-        </a>
-      </div>
-      {responseMessage && (
-        <div className='text-blue-500'>{responseMessage}</div>
-      )}
+      <FormBottom page='signup' responseMessage={responseMessage} />
     </div>
   );
 };

@@ -1,39 +1,48 @@
 import React from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import Login from './components/Login';
-import Signup from './components/Signup';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import SignupForm from './components/SignupForm';
+import LoginForm from './components/LoginForm';
 import Home from './Home';
 import Profile from './components/Profile';
 import Navbar from './components/Navbar';
+import FormPage from './components/Forms/FormPage';
 const App = () => {
-  const navigate = useNavigate();
+  let userDetails = JSON.parse(localStorage.getItem('userInfo'));
 
-  const userInfo = localStorage.getItem('userInfo');
-  const handleLogout = () => {
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('isLoggedIn');
-    navigate('/login');
+  const handleLogin = () => {
+    window.location.href = '/';
   };
 
-  let userDetails = JSON.parse(localStorage.getItem('userInfo'));
   return (
-    <div className='App '>
-      {userDetails && <Navbar onLogout={handleLogout} />}
+    <div className='App'>
+      {userDetails && <Navbar />}
       <Routes>
         <Route
           exact
           path='/'
+          element={userDetails ? <Home /> : <Navigate to='/login' />}
+        />
+        <Route
+          exact
+          path='/login'
           element={
-            userInfo ? (
-              <Home onLogout={handleLogout} />
-            ) : (
-              <Navigate to='/login' />
-            )
+            <FormPage>
+              {' '}
+              <LoginForm onLogin={handleLogin} />{' '}
+            </FormPage>
           }
         />
-        <Route exact path='/login' element={<Login />} />
-        <Route exact path='/sign-up' element={<Signup />} />
+        <Route
+          exact
+          path='/sign-up'
+          element={
+            <FormPage>
+              <SignupForm />
+            </FormPage>
+          }
+        />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/test' element={<FormPage responseMessage={''} />} />
       </Routes>
     </div>
   );

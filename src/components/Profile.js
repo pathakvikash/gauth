@@ -1,17 +1,27 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-
+import { callAPI } from '../utils/apiComp';
 const Profile = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+  const deleteImage = async (id) => {
+    const response = await callAPI(`user/remove-images/${id}`);
+    const data = await response;
+    let userinfo = localStorage.getItem('userInfo');
+    userinfo = JSON.parse(userinfo);
+    userinfo.user.images = [];
+    localStorage.setItem('userInfo', JSON.stringify(userinfo));
+    console.log(data);
+  };
+
   if (userInfo)
     return (
-      <section className='text-gray-600 body-font min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+      <section className='text-gray-600 body-font min-h-screen bg-[#101010] flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
         <div className='container px-5 py-8 mx-auto'>
-          <div className='flex flex-wrap '>
-            <div className='p-8 lg:w-2/3 mx-auto'>
-              <div className='h-full bg-gray-100 bg-opacity-75 px-8 pt-16 pb-8 rounded-lg overflow-hidden  relative'>
-                <h1 className='title-font sm:text-2xl text-xl font-bold text-gray-900 mb-2 text-center'>
+          <div id='profile-data' className='flex flex-wrap '>
+            <div className='details p-8 lg:w-2/3 mx-auto'>
+              <div className='h-full bg-[#1c1c20] bg-opacity-75 px-8 pt-16 pb-8 rounded-lg overflow-hidden  relative'>
+                <h1 className='title-font sm:text-2xl text-xl font-bold text-gray-200 mb-2 text-center'>
                   User Details
                 </h1>
                 <div className='leading-relaxed mb-3 '>
@@ -28,8 +38,47 @@ const Profile = () => {
                   <p className='text-lg font-semibold inline'>
                     Hashed password: &nbsp;
                   </p>
-                  {userInfo.user.password &&
-                    '*'.repeat(userInfo.user.password.length)}
+                  {userInfo.user.password && '*'.repeat(12)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className='container px-5 py-8 mx-auto'>
+          <div className='flex flex-wrap '>
+            <div className='p-8 lg:w-2/3 mx-auto'>
+              <div className='h-full bg-[#1c1c20] bg-opacity-75 px-8 pt-16 pb-8 rounded-lg overflow-hidden  relative'>
+                <h1 className='title-font sm:text-2xl text-xl font-bold text-gray-200 mb-2 text-center'>
+                  Images
+                </h1>
+                <div className='leading-relaxed mb-3 '>
+                  <p className='text-lg font-semibold inline'>
+                    Number of Images: &nbsp;
+                  </p>{' '}
+                  {userInfo.user.images && userInfo.user.images.length}
+                  <ul className='flex gap-2 justify-around m-5 md:flex-row flex-col'>
+                    {userInfo.user.images &&
+                      userInfo.user.images.map((image, index) => (
+                        <li key={index}>
+                          <img
+                            src={
+                              typeof image.data === 'string'
+                                ? image
+                                : `data:image/jpeg;base64,${image}`
+                            }
+                            alt={`image ${index + 1}`}
+                            className='w-40 h-40 cursor-pointer rounded-md hover:shadow-md transition duration-300'
+                            // onClick={() => deleteImage(userInfo.user.email)}
+                          />
+                        </li>
+                      ))}
+                  </ul>
+                  <p
+                    className='text-lg cursor-pointer font-semibold inline'
+                    onClick={() => deleteImage(userInfo.user.email)}
+                  >
+                    Delete all images
+                  </p>
                 </div>
               </div>
             </div>
@@ -42,5 +91,27 @@ const Profile = () => {
     return <Navigate to='/login' />;
   }
 };
+
+function Puzzle() {
+  let n = 16;
+  function fillCell(i) {
+    const cell = document.getElementById(`cell-${i + 1}`);
+    cell.style.backgroundColor = '#007bff';
+  }
+  return (
+    <div className='board '>
+      {Array.from({ length: n }, (_, i) => (
+        <div
+          id={`cell-${i + 1}`}
+          className='cell'
+          onClick={() => fillCell(i)}
+          key={i}
+        >
+          {i + 1}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default Profile;
