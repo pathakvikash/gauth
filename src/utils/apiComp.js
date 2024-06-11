@@ -1,25 +1,30 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:4000';
+const BASE_URL = `https://${process.env.REACT_APP_BASE_URL}`;
 const config = {
+  baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'multipart/form-data',
     Accept: 'application/json',
   },
 };
 
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
+
 export const callAPI = async (resource) => {
-  const { data } = await axios.get(
-    `${process.env.REACT_APP_API_BASE_URL || BASE_URL}/${resource}`,
-    config
-  );
+  const { data } = await api.get(`${resource}`);
   return data;
 };
-export const postAPI = async (resource, body) => {
-  const { data } = await axios.post(
-    `${process.env.REACT_APP_API_BASE_URL || BASE_URL}/${resource}`,
-    body,
-    config
-  );
+export const postImgAPI = async (resource, body) => {
+  console.log(body, 'body');
+  const { data } = await axios.post(`${resource}`, body, config);
   return data;
 };
+
+export default api;

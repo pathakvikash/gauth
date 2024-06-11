@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import FormFields from './Forms/FormFields';
 import ImageCard from './ImageCard';
-import axios from 'axios';
 import { Context } from '../context/Context';
+
+import api from '../utils/apiComp';
 import emailjs from '@emailjs/browser';
 import FormBottom from '../components/Forms/FormBottom';
 const LoginForm = ({ onLogin }) => {
@@ -35,7 +36,7 @@ const LoginForm = ({ onLogin }) => {
       })
     ) {
       try {
-        const response = await axios.post('http://localhost:4000/login', {
+        const response = await api.post(`/login`, {
           email,
           password,
           pattern: selectedPattern,
@@ -43,9 +44,20 @@ const LoginForm = ({ onLogin }) => {
 
         if (response.status === 200) {
           setResponseMessage('Login successful');
-          localStorage.setItem('isLoggedIn', 'true');
           let userInfo = response.data;
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
+          localStorage.setItem('isLoggedIn', 'true');
+
+          localStorage.setItem(
+            'userInfo',
+            JSON.stringify({
+              user: {
+                email: userInfo.user.email,
+                name: userInfo.user.name,
+                id: userInfo.user._id,
+              },
+              token: userInfo.token,
+            })
+          );
           onLogin();
         } else {
           setResponseMessage('Invalid email or password');
@@ -57,6 +69,7 @@ const LoginForm = ({ onLogin }) => {
           setSelectedPattern([]);
           setLoginAttempts(loginAttempts + 1);
         } else {
+          console.log(error, 'Something went wrong');
           setResponseMessage('Something went wrong');
           setLoginAttempts(loginAttempts + 1);
         }
@@ -71,8 +84,12 @@ const LoginForm = ({ onLogin }) => {
   }
 
   useEffect(() => {
-    getUserImages();
-  }, [email && email.slice(-3) == 'com']);
+    if (email.length > 6 && email.slice(-3) === 'com') {
+      getUserImages(email);
+    } else {
+      return;
+    }
+  }, [email]);
 
   return (
     <div className='max-w-md mx-auto mt-8 p-6 border border-gray-800 rounded-md shadow-md'>

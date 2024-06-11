@@ -1,15 +1,14 @@
 import React, { useState, createContext } from 'react';
-import axios from 'axios';
 import { p1, p2, p3, p4, p5, p6 } from '../static/constant';
 import emailjs from '@emailjs/browser';
-import { callAPI } from '../utils/apiComp';
+import { callAPI, postImgAPI } from '../utils/apiComp';
+import api from '../utils/apiComp';
 export const Context = createContext({
-  userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
   onLogout: () => {},
 });
 
 function AuthProvider({ children }) {
-  let userDetails = JSON.parse(localStorage.getItem('userInfo'));
+  let userDetails = localStorage.getItem('userInfo');
   const data = [
     {
       title: 'Move beyond the password',
@@ -34,7 +33,8 @@ function AuthProvider({ children }) {
   const [password, setPassword] = useState('');
   const [imagesUploaded, setImagesUploaded] = useState(false);
   const [selectedPattern, setSelectedPattern] = useState([]);
-  const handleImageUpload = (event) => {
+
+  const handleImageUpload = async (event) => {
     event.preventDefault();
     setImagesUploaded(false);
     if (!email) {
@@ -47,22 +47,12 @@ function AuthProvider({ children }) {
       for (let i = 0; i < files.length; i++) {
         formData.append('images', files[i]);
       }
-      axios
-        .post(`http://localhost:4000/upload/${email}`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        })
-        .then((response) => {
-          setImagesUploaded(true);
-        })
-        .catch((error) => {
-          console.error('Error uploading images:', error);
-        });
+      const response = await postImgAPI(`upload/${email}`, formData);
+      console.log('all set', response);
+      setImagesUploaded(true);
     }
   };
-
-  const getUserImages = async () => {
+  const getUserImages = async (email) => {
     try {
       let response = await callAPI(`get-user-images/${email}`);
       setUploadedImages(response);
@@ -96,7 +86,6 @@ function AuthProvider({ children }) {
   };
 
   const handleImageClick = (imageId) => {
-    console.log(imageId, 'imageId');
     const newPattern = [...selectedPattern, imageId];
     setSelectedPattern(newPattern);
   };

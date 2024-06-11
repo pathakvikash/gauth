@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { callAPI } from '../utils/apiComp';
+import { Context } from '../context/Context';
+import ImageCard from './ImageCard';
 const Profile = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+  const { uploadedImages, getUserImages } = useContext(Context);
   const deleteImage = async (id) => {
     const response = await callAPI(`user/remove-images/${id}`);
     const data = await response;
@@ -13,6 +16,13 @@ const Profile = () => {
     localStorage.setItem('userInfo', JSON.stringify(userinfo));
     console.log(data);
   };
+
+  useEffect(() => {
+    let email = localStorage.getItem('userInfo');
+    email = JSON.parse(email);
+    email = email.user.email;
+    getUserImages(email);
+  }, []);
 
   if (userInfo)
     return (
@@ -55,20 +65,14 @@ const Profile = () => {
                   <p className='text-lg font-semibold inline'>
                     Number of Images: &nbsp;
                   </p>{' '}
-                  {userInfo.user.images && userInfo.user.images.length}
                   <ul className='flex gap-2 justify-around m-5 md:flex-row flex-col'>
-                    {userInfo.user.images &&
-                      userInfo.user.images.map((image, index) => (
+                    {uploadedImages?.length > 0 &&
+                      uploadedImages?.map((image, index) => (
                         <li key={index}>
-                          <img
-                            src={
-                              typeof image.data === 'string'
-                                ? image
-                                : `data:image/jpeg;base64,${image}`
-                            }
-                            alt={`image ${index + 1}`}
-                            className='w-40 h-40 cursor-pointer rounded-md hover:shadow-md transition duration-300'
-                            // onClick={() => deleteImage(userInfo.user.email)}
+                          <ImageCard
+                            index={index}
+                            image={image}
+                            deleteImage={deleteImage}
                           />
                         </li>
                       ))}

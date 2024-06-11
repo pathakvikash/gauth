@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../utils/apiComp';
 import FormBottom from '../components/Forms/FormBottom';
 
 import FormFields from '../components/Forms/FormFields';
@@ -21,52 +21,39 @@ const SignupForm = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
-  const [imagesUploaded, setImagesUploaded] = useState(false);
   const [p1, p2, p3, p4, p5, p6] = staticImages;
 
   useEffect(() => {
-    getUserImages();
-  }, [email, imagesUploaded]);
+    if (email.length > 6 && email.slice(-3) === 'com') {
+      getUserImages(email);
+    } else {
+      return;
+    }
+  }, [email]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    console.log(email, password, selectedPattern, 'selectedPattern');
-    if (
-      validate({
-        email,
-        password,
-        selectedPattern,
-      })
-    ) {
+    if (validate({ name, email, password, selectedPattern })) {
       try {
-        const response = await fetch('http://localhost:4000/sign-up', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await api.post(
+          '/sign-up',
+          JSON.stringify({
             name,
             email,
-            password: password.replace('a', '*'),
+            password,
             pattern: JSON.stringify(selectedPattern),
-          }),
-        });
+          })
+        );
 
-        const responseData = await response.json();
-
-        if (response.ok) {
+        if (response.status === 201) {
           setResponseMessage('Registration successful');
-          alert('Registration successful');
           window.location.href = '/login';
-          console.log(responseData);
         } else {
-          setResponseMessage(responseData.message);
-          console.error(responseData);
+          console.error(response.data);
         }
       } catch (error) {
-        console.error(error);
         setResponseMessage('Something went wrong');
+        console.error(error);
       }
     }
   };
