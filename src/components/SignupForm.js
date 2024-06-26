@@ -99,16 +99,6 @@ const SignupForm = () => {
                 </div>
               ))}
             </div>
-            <div className='upload-img'>
-              <input
-                type='file'
-                onChange={handleImageUpload}
-                accept='image/*'
-                disabled={!/\S+@\S+\.\S+/.test(email)}
-                multiple
-                className='w-full px-3 py-2 border bg-slate-900 border-gray-600 rounded-md focus:outline-none focus:border-blue-500'
-              />
-            </div>
           </div>
         </div>
 

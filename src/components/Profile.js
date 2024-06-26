@@ -1,29 +1,54 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { callAPI } from '../utils/apiComp';
 import { Context } from '../context/Context';
-import ImageCard from './ImageCard';
+import { postImgAPI } from '../utils/apiComp';
+import Preview from './Preview';
+import api from '../utils/apiComp';
 const Profile = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
+  let email = userInfo.user.email;
+  const [status, setStatus] = useState('');
+  const [refresh, setrefresh] = useState(false);
   const { uploadedImages, getUserImages } = useContext(Context);
-  const deleteImage = async (id) => {
-    const response = await callAPI(`user/remove-images/${id}`);
-    const data = await response;
-    let userinfo = localStorage.getItem('userInfo');
-    userinfo = JSON.parse(userinfo);
-    userinfo.user.images = [];
-    localStorage.setItem('userInfo', JSON.stringify(userinfo));
-    console.log(data);
-  };
+  let formData = new FormData();
 
   useEffect(() => {
-    let email = localStorage.getItem('userInfo');
-    email = JSON.parse(email);
-    email = email.user.email;
+    let email = userInfo.user.email;
     getUserImages(email);
-  }, []);
+  }, [refresh]);
 
+  if (!userInfo) return <Navigate to='/login' />;
+
+  const handleFileSelection = async (event) => {
+    event.preventDefault();
+    if (email) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+      }
+      const response = await postImgAPI(`upload/${email}`, formData);
+      setStatus(response.message);
+      setrefresh(!refresh);
+    }
+  };
+
+  const handleDelete = async (email) => {
+    if (email) {
+      const response = await callAPI(`user/remove-images/${email}`);
+      const data = await response;
+      setrefresh(!refresh);
+      console.log(data);
+    }
+  };
+
+  const deleteAllImages = async (email) => {
+    if (email) {
+      const response = await callAPI(`user/remove-all-images/${email}`);
+      const data = await response;
+      console.log(data);
+    }
+  };
   if (userInfo)
     return (
       <section className='text-gray-600 body-font min-h-screen bg-[#101010] flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
@@ -50,6 +75,19 @@ const Profile = () => {
                   </p>
                   {userInfo.user.password && '*'.repeat(12)}
                 </div>
+                <div className='text upload flex justify-between'>
+                  <input
+                    type='file'
+                    multiple
+                    accept='image/*'
+                    onChange={handleFileSelection}
+                  />
+                  {status && status.includes('successfully') ? (
+                    <i className='fa-solid fa-circle-check w-5 h-5'>✅</i>
+                  ) : (
+                    <i className='fa-solid fa-circle-xmark'>❌</i>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -65,24 +103,29 @@ const Profile = () => {
                   <p className='text-lg font-semibold inline'>
                     Number of Images: &nbsp;
                   </p>{' '}
+                  {uploadedImages?.length}
                   <ul className='flex gap-2 justify-around m-5 md:flex-row flex-col'>
                     {uploadedImages?.length > 0 &&
                       uploadedImages?.map((image, index) => (
                         <li key={index}>
-                          <ImageCard
-                            index={index}
-                            image={image}
-                            deleteImage={deleteImage}
-                          />
+                          <ProfileImage image={image} index={index} />
                         </li>
                       ))}
                   </ul>
-                  <p
-                    className='text-lg cursor-pointer font-semibold inline'
-                    onClick={() => deleteImage(userInfo.user.email)}
-                  >
-                    Delete all images
-                  </p>
+                  <div className='flex justify-between'>
+                    <p
+                      className='text-lg cursor-pointer font-semibold inline'
+                      onClick={() => deleteAllImages(userInfo.user.email)}
+                    >
+                      Delete All
+                    </p>
+                    <p
+                      className='text-lg cursor-pointer font-semibold inline'
+                      onClick={() => handleDelete(userInfo.user.email)}
+                    >
+                      Delete Last
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -96,26 +139,8 @@ const Profile = () => {
   }
 };
 
-function Puzzle() {
-  let n = 16;
-  function fillCell(i) {
-    const cell = document.getElementById(`cell-${i + 1}`);
-    cell.style.backgroundColor = '#007bff';
-  }
-  return (
-    <div className='board '>
-      {Array.from({ length: n }, (_, i) => (
-        <div
-          id={`cell-${i + 1}`}
-          className='cell'
-          onClick={() => fillCell(i)}
-          key={i}
-        >
-          {i + 1}
-        </div>
-      ))}
-    </div>
-  );
+function ProfileImage({ image, index }) {
+  return <Preview image={image} />;
 }
 
 export default Profile;

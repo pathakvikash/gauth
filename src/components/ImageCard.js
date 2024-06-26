@@ -6,9 +6,10 @@ const ImageCard = ({ image, index, handleImageClick }) => {
         src={
           typeof image == 'string' && image.startsWith('/static')
             ? image
-            : `data:image/jpeg;base64,${image}`
+            : `data:image/jpeg;base64,${image.data}`
         } // Check if item is a string (URL) or an object (image data from MongoDB)
         alt={`item ${index + 1}`}
+        // onClick={showPreview}
       />
     </div>
   );
