@@ -37,6 +37,7 @@ function AuthProvider({ children }) {
   const handleImageUpload = async (event) => {
     event.preventDefault();
     setImagesUploaded(false);
+    let email = userDetails?.user?.email;
     if (!email) {
       console.log('Email is required');
       return;
@@ -128,6 +129,7 @@ function AuthProvider({ children }) {
         handleImageClick,
         sendEmail,
         selectedPattern,
+        setImagesUploaded,
         setSelectedPattern,
       }}
     >

@@ -7,6 +7,7 @@ const Navbar = () => {
     localStorage.removeItem('userInfo');
     localStorage.removeItem('isLoggedIn');
     navigate('/login');
+    window.location.reload();
   };
   return (
     <nav className='nav py-4 relative md:px-6 px-3 w-full text-[#F1C376]'>

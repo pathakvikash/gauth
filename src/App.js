@@ -9,10 +9,6 @@ import FormPage from './components/Forms/FormPage';
 const App = () => {
   let userDetails = JSON.parse(localStorage.getItem('userInfo'));
 
-  const handleLogin = () => {
-    window.location.href = '/';
-  };
-
   return (
     <div className='App'>
       {userDetails && <Navbar />}
@@ -28,7 +24,7 @@ const App = () => {
           element={
             <FormPage>
               {' '}
-              <LoginForm onLogin={handleLogin} />{' '}
+              <LoginForm />{' '}
             </FormPage>
           }
         />

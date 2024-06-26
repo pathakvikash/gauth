@@ -22,7 +22,6 @@ export const callAPI = async (resource) => {
   return data;
 };
 export const postImgAPI = async (resource, body) => {
-  console.log(body, 'body');
   const { data } = await axios.post(`${resource}`, body, config);
   return data;
 };

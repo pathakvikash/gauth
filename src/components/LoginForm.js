@@ -6,7 +6,7 @@ import { Context } from '../context/Context';
 import api from '../utils/apiComp';
 import emailjs from '@emailjs/browser';
 import FormBottom from '../components/Forms/FormBottom';
-const LoginForm = ({ onLogin }) => {
+const LoginForm = () => {
   const {
     staticImages,
     email,
@@ -58,7 +58,7 @@ const LoginForm = ({ onLogin }) => {
               token: userInfo.token,
             })
           );
-          onLogin();
+          window.location.href = '/profile';
         } else {
           setResponseMessage('Invalid email or password');
           setLoginAttempts(loginAttempts + 1);
