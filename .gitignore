@@ -1,21 +1,31 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
-.env
-# testing
-/coverage
-# production
-/build
 
-# misc
-.DS_Store
+# env
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# production build
+/build
+
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+/prisma/schema.production.prisma
+
+# misc
+.DS_Store
 
 npm-debug.log*
 yarn-debug.log*
